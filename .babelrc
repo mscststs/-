@@ -1,0 +1,19 @@
+{
+    "presets": [
+        "es2015",
+        "stage-0"
+    ],
+    "sourceMaps": true,
+    "retainLines": true,
+    "plugins": [
+        [
+            "transform-runtime",
+            {
+                "helpers": false,
+                "polyfill": false,
+                "regenerator": true,
+                "moduleName": "babel-runtime"
+            }
+        ]
+    ]
+}
