@@ -63,25 +63,27 @@ const fields = [
 
 function SaveResult(info){
     result.push(info);
-    if(result.lenth %100==0){
-        console.log("当前已获取 ： "+result.length+"条");
-    }
+    console.log("当前已获取 ： "+result.length+"条");
     if(result.length == 13000){
         //当全部获取完毕时
-        console.log("获取完毕，将保存为 result.csv ");
-        result.sort((a,b)=>a.count-b.count);
-        let json2csvParser = new Json2csvParser({ fields });
-        let csv = json2csvParser.parse(result);
-        let text = iconv.encode(csv,"GBK")
-        fs.writeFile('result.csv', text,  function(err) {
-            if (err) {
-                console.error(err);
-            }
-            else{
-                console.log("数据写入成功");
-            }
-        });
+        Save();
     }
+}
+function Save(){
+    console.log("当前已获取："+result.length);
+    console.log("获取完毕，将保存为 result.csv ");
+    result.sort((a,b)=>a.count-b.count);
+    let json2csvParser = new Json2csvParser({ fields });
+    let csv = json2csvParser.parse(result);
+    let text = iconv.encode(csv,"GBK")
+    fs.writeFile('result.csv', text,  function(err) {
+        if (err) {
+            console.error(err);
+        }
+        else{
+            console.log("数据写入成功");
+        }
+    });
 }
 
 async function getInfo(uid,count,retry=0){
@@ -99,7 +101,7 @@ async function getInfo(uid,count,retry=0){
     };
 
     try{
-        /* let baseInfo = await api.origin({
+        let baseInfo = await api.origin({
             uri:"https://api.bilibili.com/x/web-interface/card",
             method:"get",
             form:{
@@ -119,7 +121,7 @@ async function getInfo(uid,count,retry=0){
             user_info.isVip = baseInfo.data.card.vip.vipStatus; //是否大会员
             
             //user_info.regTime = formatTime(baseInfo.data.regtime*1000,"YYYY-MM-DD"); //注册时间 (无法获取)
-        } */
+        } 
         let relation  = await api.send("https://api.bilibili.com/x/relation/stat","get",{
             vmid:uid
         });
@@ -154,6 +156,7 @@ async function getInfo(uid,count,retry=0){
             await getInfo(uid,count,retry+1);//重试
         }else{
             console.log(e.message);
+            Save();
             process.exit();
         }
     }
@@ -162,8 +165,9 @@ async function init(){
     let count = 0;
     for(let uid of originList){
         count++;
-        getInfo(uid,count);
-        await sleep(20);
+        await getInfo(uid,count);
+        //console.log("Now Progress: "+count);
+        await sleep(400);
         if(api.thread >= 4 ){
             await sleep(20);
         }
